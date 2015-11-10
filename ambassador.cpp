@@ -1,5 +1,5 @@
 /*
-** selectserver.c -- a cheezy multiperson chat server
+** Ambassador.c -- a cheezy multiperson chat server
 */
 
 #include <stdio.h>
@@ -12,8 +12,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <string>
+#include "json.hpp"
+
 
 #define PORT "9034"   // port we're listening on
+
+using json = nlohmann::json;
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -55,7 +60,7 @@ int main(void)
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
     if ((rv = getaddrinfo(NULL, PORT, &hints, &ai)) != 0) {
-        fprintf(stderr, "selectserver: %s\n", gai_strerror(rv));
+        fprintf(stderr, "Ambassador: %s\n", gai_strerror(rv));
         exit(1);
     }
 
@@ -78,7 +83,7 @@ int main(void)
 
     // if we got here, it means we didn't get bound
     if (p == NULL) {
-        fprintf(stderr, "selectserver: failed to bind\n");
+        fprintf(stderr, "Ambassador: failed to bind\n");
         exit(2);
     }
 
@@ -96,10 +101,12 @@ int main(void)
     // keep track of the biggest file descriptor
     fdmax = listener; // so far, it's this one
 
+
+
     // main loop
     for(;;) {
         read_fds = master; // copy it
-        if (poll())
+
         if (select(fdmax+1, &read_fds, NULL, NULL, NULL) == -1) {
             perror("select");
             exit(4);
@@ -122,12 +129,21 @@ int main(void)
                         if (newfd > fdmax) {    // keep track of the max
                             fdmax = newfd;
                         }
-                        printf("selectserver: new connection from %s on "
+                        printf("Ambassador: new connection from %s on "
                                        "socket %d\n",
                                inet_ntop(remoteaddr.ss_family,
                                          get_in_addr((struct sockaddr*)&remoteaddr),
                                          remoteIP, INET6_ADDRSTRLEN),
                                newfd);
+
+                        json j = {"message", "hello"};
+
+                        char *msg = (char *) j.dump().c_str();
+                        size_t size = strlen(msg);
+                        if (send(newfd, msg, size, 0) == -1) {
+                            perror("send");
+                        }
+
                     }
                 } else {
                     // handle data from a client
@@ -135,7 +151,7 @@ int main(void)
                         // got error or connection closed by client
                         if (nbytes == 0) {
                             // connection closed
-                            printf("selectserver: socket %d hung up\n", i);
+                            printf("Ambassador: socket %d hung up\n", i);
                         } else {
                             perror("recv");
                         }
@@ -148,6 +164,7 @@ int main(void)
                             if (FD_ISSET(j, &master)) {
                                 // except the listener and ourselves
                                 if (j != listener && j != i) {
+                                    printf("Ambassador: ");
                                     if (send(j, buf, nbytes, 0) == -1) {
                                         perror("send");
                                     }
