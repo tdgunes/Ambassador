@@ -19,8 +19,8 @@
 #include <errno.h>
 #include <err.h>
 #include <signal.h>
-#include <queue>
 #include <iostream>
+#include <map>
 
 // libevent2
 #include <event2/bufferevent.h>
@@ -29,34 +29,39 @@
 #include <event2/util.h>
 #include <event2/event.h>
 
+
 #include "Client.h"
 
 class Server {
+
+public:
+    static std::map<int, Client *> clients;
+
+    Server(unsigned int port);
+
+    void start();
+
+    ~Server();
+
 
 private:
     unsigned int port;
 
     // called by libevent when there is data to read
-    void bufferedOnRead(struct bufferevent *bev, void *arg);
+    void static bufferedOnRead(struct bufferevent *bev, void *arg);
 
     // called by libevent when there is error on the underlying socket
-    void bufferedOnError(struct bufferevent *bev, void *arg);
+    void static bufferedOnError(struct bufferevent *bev, short what, void *arg);
 
     void static onAccept(struct evconnlistener *listener, evutil_socket_t client_fd,
                          struct sockaddr *sa, int socklen, void *user_data);
 
     void static signalSigint(evutil_socket_t sig, short events, void *user_data);
 
-    void closeClient(Client *client);
+    void static closeClient(Client *client);
 
 
-public:
-    std::queue<Client *> clients;
 
-    Server(unsigned int port);
-
-    void start();
-    ~Server();
 };
 
 

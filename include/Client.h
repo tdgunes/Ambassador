@@ -10,13 +10,12 @@
 
 class Client {
 
-private:
+
+public:
     int fd;
     struct bufferevent *bufferedEvent;
 
-
-public:
-    Client();
+    Client(int fd);
 
     enum class Status {
         INIT, NICKNAME, CHAT

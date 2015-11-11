@@ -4,8 +4,8 @@
 
 #include "Client.h"
 
-Client::Client() {
-
+Client::Client(int fd) {
+    this->fd = fd;
 }
 
 Client::~Client() {
