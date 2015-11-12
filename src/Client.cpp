@@ -6,6 +6,7 @@
 
 Client::Client(int fd) {
     this->fd = fd;
+    this->status = Client::Status::INIT;
 }
 
 Client::~Client() {

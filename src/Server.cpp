@@ -2,8 +2,6 @@
 // Created by tdgunes on 29.10.2015.
 //
 
-
-
 #include "Server.h"
 
 std::map<int, Client *> Server::clients;
@@ -20,7 +18,6 @@ void Server::start() {
     struct event *signalEvent;
 
     // Initializing libevent
-
     std::cout << "Initialize event_base." << std::endl;
 
     evbase = event_base_new();
@@ -73,7 +70,6 @@ void Server::start() {
     event_base_free(evbase);
 }
 
-
 void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     Client *thisClient = (Client *) arg;
     uint8_t data[8192];
@@ -85,9 +81,9 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
         if (n <= 0) {
             break;
         }
-
+        std::string message(data, data + n - 2);
         if (thisClient->status == Client::Status::CHAT) {
-            std::cout << "[" << thisClient->nickname << "]: " << data;
+            std::cout << "[" << thisClient->nickname << "]: " << message << std::endl;
             for (auto pair: clients) {
                 Client *client = pair.second;
                 if (client != thisClient) {
@@ -102,11 +98,8 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
         }
 
         if (thisClient->status == Client::Status::NICKNAME) {
-            std::string nickname(data, data + n - 2);
-            thisClient->nickname = nickname;
-
-
-            std::cout << "Client from " << thisClient->fd << ", now is " << nickname << "." << std::endl;
+            thisClient->nickname = message;
+            std::cout << "Client from " << thisClient->fd << ", now is " << thisClient->nickname << "." << std::endl;
             thisClient->status = Client::Status::CHAT;
         }
 
@@ -184,10 +177,10 @@ void Server::signalSigint(evutil_socket_t sig, short events, void *user_data) {
 
 void Server::closeClient(Client *client) {
 
-    if (client->status == Client::Status::NICKNAME) {
-        std::cout << "Remove " << client->nickname << "from" << client->fd << std::endl;
+    if (client->status == Client::Status::CHAT || client->status == Client::Status::NICKNAME) {
+        std::cout << "Remove " << client->nickname << " from " << client->fd << "." << std::endl;
     } else {
-        std::cout << "Remove " << "Anonymous" << " from " << client->fd << std::endl;
+        std::cout << "Remove " << "Anonymous" << " from " << client->fd << "." << std::endl;
     }
 
     bufferevent_free(client->bufferedEvent);
@@ -196,11 +189,6 @@ void Server::closeClient(Client *client) {
     delete client;
 }
 
-
-
 Server::~Server() {
     std::cout << "Shutting down the server." << std::endl;
 }
-
-
-

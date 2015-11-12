@@ -46,21 +46,14 @@ public:
 
 private:
     unsigned int port;
-
     // called by libevent when there is data to read
     void static bufferedOnRead(struct bufferevent *bev, void *arg);
-
     // called by libevent when there is error on the underlying socket
     void static bufferedOnError(struct bufferevent *bev, short what, void *arg);
-
     void static onAccept(struct evconnlistener *listener, evutil_socket_t client_fd,
                          struct sockaddr *sa, int socklen, void *user_data);
-
     void static signalSigint(evutil_socket_t sig, short events, void *user_data);
-
     void static closeClient(Client *client);
-
-
 
 };
 
