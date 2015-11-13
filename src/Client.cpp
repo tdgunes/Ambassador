@@ -9,6 +9,12 @@ Client::Client(int fd) {
     this->status = Client::Status::INIT;
 }
 
+void Client::send(std::string message) {
+    bufferevent_write(this->bufferedEvent, message.c_str(), strlen(message.c_str()));
+}
+
 Client::~Client() {
 
 }
+
+

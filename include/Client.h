@@ -12,16 +12,18 @@ class Client {
 
 
 public:
-    int fd;
-    struct bufferevent *bufferedEvent;
-
     Client(int fd);
 
     enum class Status {
         INIT, NICKNAME, CHAT
     };
+
+    int fd;
     Status status;
     std::string nickname;
+    struct bufferevent *bufferedEvent;
+
+    void send(std::string message);
 
     ~Client();
 

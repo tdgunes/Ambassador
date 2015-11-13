@@ -5,9 +5,11 @@
 #include "Server.h"
 
 std::map<int, Client *> Server::clients;
+Handler *Server::handler = nullptr;
 
 Server::Server(unsigned int port) {
     std::cout << "Server is initialising..." << std::endl;
+    Server::handler = new Handler();
     this->port = port;
 }
 
@@ -71,7 +73,7 @@ void Server::start() {
 }
 
 void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
-    Client *thisClient = (Client *) arg;
+    Client *from = (Client *) arg;
     uint8_t data[8192];
     size_t n = 0;
 
@@ -81,28 +83,9 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
         if (n <= 0) {
             break;
         }
+
         std::string message(data, data + n - 2);
-        if (thisClient->status == Client::Status::CHAT) {
-            std::cout << "[" << thisClient->nickname << "]: " << message << std::endl;
-            for (auto pair: clients) {
-                Client *client = pair.second;
-                if (client != thisClient) {
-                    bufferevent_write(client->bufferedEvent, "[", 2);
-                    bufferevent_write(client->bufferedEvent,
-                                      thisClient->nickname.c_str(),
-                                      strlen(thisClient->nickname.c_str()));
-                    bufferevent_write(client->bufferedEvent, "]: ", 4);
-                    bufferevent_write(client->bufferedEvent, data, n);
-                }
-            }
-        }
-
-        if (thisClient->status == Client::Status::NICKNAME) {
-            thisClient->nickname = message;
-            std::cout << "Client from " << thisClient->fd << ", now is " << thisClient->nickname << "." << std::endl;
-            thisClient->status = Client::Status::CHAT;
-        }
-
+        Server::handler->handleMessage(from, message);
     }
 }
 
@@ -191,4 +174,5 @@ void Server::closeClient(Client *client) {
 
 Server::~Server() {
     std::cout << "Shutting down the server." << std::endl;
+    delete Server::handler;
 }

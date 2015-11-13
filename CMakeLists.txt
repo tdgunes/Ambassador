@@ -11,7 +11,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include_directories(${LIBEVENT2_INCLUDE_DIR} include/ libs/)
 
-set(SOURCE_FILES ambassador.cpp src/Client.cpp include/Client.h src/Server.cpp include/Server.h libs/json.hpp)
+set(SOURCE_FILES
+        ambassador.cpp
+        src/Client.cpp
+        include/Client.h
+        src/Server.cpp
+        include/Server.h
+        libs/json.hpp
+        src/Handler.cpp
+        include/Handler.h)
 
 add_executable(ambassador ${SOURCE_FILES})
 target_link_libraries(ambassador ${LIBEVENT2_LIBRARIES})

@@ -29,14 +29,14 @@
 #include <event2/util.h>
 #include <event2/event.h>
 
-
 #include "Client.h"
+#include "Handler.h"
 
 class Server {
 
 public:
     static std::map<int, Client *> clients;
-
+    static Handler *handler;
     Server(unsigned int port);
 
     void start();
