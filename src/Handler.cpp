@@ -5,7 +5,6 @@
 #include <Server.h>
 #include "Handler.h"
 
-
 Handler::Handler() {
 
 }
