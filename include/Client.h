@@ -6,6 +6,8 @@
 #define AMBASSADOR_CLIENT_H
 
 #include <string>
+#include <stdio.h>
+#include <string.h>
 #include <event2/bufferevent.h>
 
 class Client {
