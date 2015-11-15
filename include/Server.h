@@ -36,11 +36,14 @@ class Server {
 
 public:
     static std::map<int, Client *> clients;
+    static std::map<std::string, Client *> uuids;
+
     static Handler *handler;
     Server(unsigned int port);
 
     void start();
 
+    void static closeClient(Client *client);
     ~Server();
 
 
@@ -53,7 +56,7 @@ private:
     void static onAccept(struct evconnlistener *listener, evutil_socket_t client_fd,
                          struct sockaddr *sa, int socklen, void *user_data);
     void static signalSigint(evutil_socket_t sig, short events, void *user_data);
-    void static closeClient(Client *client);
+
 
 };
 

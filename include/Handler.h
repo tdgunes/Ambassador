@@ -10,6 +10,7 @@
 #include <iostream>
 #include <event2/bufferevent.h>
 
+
 #include "Client.h"
 
 
@@ -20,8 +21,7 @@ public:
 
     void handleMessage(Client *from, std::string message);
 
-    void onNickname(Client *from, std::string message);
-
+    void onUUID(Client *from, std::string message);
     void onChat(Client *from, std::string message);
 
     ~Handler();

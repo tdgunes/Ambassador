@@ -5,6 +5,8 @@
 #include "Server.h"
 
 std::map<int, Client *> Server::clients;
+std::map<std::string, Client *> Server::uuids;
+
 Handler *Server::handler = nullptr;
 
 Server::Server(unsigned int port) {
@@ -35,8 +37,7 @@ void Server::start() {
     std::cout << "Bind port " << this->port << std::endl;
 
 
-    listener = evconnlistener_new_bind(evbase,
-                                       onAccept,
+    listener = evconnlistener_new_bind(evbase, &Server::onAccept,
                                        (void *) evbase,
                                        LEV_OPT_REUSEABLE | LEV_OPT_CLOSE_ON_FREE,
                                        -1,
@@ -77,16 +78,19 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     uint8_t data[8192];
     size_t n = 0;
 
-    /* Read 8k at a time and send it to all connected clients. */
+//    std::vector<char> message;
+    /* Read 8kb at a time and send it to all connected clients. */
     while (true) {
         n = bufferevent_read(bev, data, sizeof(data));
         if (n <= 0) {
             break;
         }
-
+//        message.push_back(data )
         std::string message(data, data + n - 2);
         Server::handler->handleMessage(from, message);
     }
+
+
 }
 
 void Server::bufferedOnError(struct bufferevent *bev, short what, void *arg) {
@@ -108,7 +112,7 @@ void Server::onAccept(struct evconnlistener *listener, evutil_socket_t client_fd
                       struct sockaddr *sa, int socklen, void *user_data) {
 
     struct event_base *evbase = (event_base *) user_data;
-    const char welcome_message[] = "Nickname: ";
+
     struct sockaddr_in *sai;
 
 
@@ -116,7 +120,7 @@ void Server::onAccept(struct evconnlistener *listener, evutil_socket_t client_fd
 
     /* We've accepted a new client, create a client object. */
     Client *client = new Client(client_fd);
-    client->status = Client::Status::NICKNAME;
+    client->status = Client::Status::UUID;
     client->bufferedEvent = bufferevent_socket_new(evbase, client_fd, BEV_OPT_CLOSE_ON_FREE);
 
     if (!client->bufferedEvent) {
@@ -135,15 +139,15 @@ void Server::onAccept(struct evconnlistener *listener, evutil_socket_t client_fd
 
     clients[client->fd] = client;
 
+
     printf("Accepted connection from %s\n", inet_ntoa(sai->sin_addr));
 
-    bufferevent_write(client->bufferedEvent, welcome_message, sizeof(welcome_message));
+
 }
 
 void Server::signalSigint(evutil_socket_t sig, short events, void *user_data) {
 
     struct event_base *evbase = (struct event_base *) user_data;
-
 
     std::cout << "Caught an interrupt signal, close all clients\n" << std::endl;
     const char *goodbyeMessage = "Goodbye";
@@ -160,14 +164,16 @@ void Server::signalSigint(evutil_socket_t sig, short events, void *user_data) {
 
 void Server::closeClient(Client *client) {
 
-    if (client->status == Client::Status::CHAT || client->status == Client::Status::NICKNAME) {
-        std::cout << "Remove " << client->nickname << " from " << client->fd << "." << std::endl;
+    if (client->status == Client::Status::CHAT || client->status == Client::Status::UUID) {
+        std::cout << "Remove " << client->uuid << " from " << client->fd << "." << std::endl;
     } else {
         std::cout << "Remove " << "Anonymous" << " from " << client->fd << "." << std::endl;
     }
 
     bufferevent_free(client->bufferedEvent);
+
     close(client->fd);
+    uuids.erase(client->uuid);
     clients.erase(client->fd);
     delete client;
 }

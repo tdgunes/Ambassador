@@ -17,12 +17,12 @@ public:
     Client(int fd);
 
     enum class Status {
-        INIT, NICKNAME, CHAT
+        INIT, UUID, CHAT
     };
 
     int fd;
     Status status;
-    std::string nickname;
+    std::string uuid;
     struct bufferevent *bufferedEvent;
 
     void send(std::string message);
