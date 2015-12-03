@@ -43,9 +43,22 @@ void Handler::onChat(Client *from, std::string message) {
 
 
         if (uuid.length() > 0) {
-            Client *to = Server::uuids[uuid];
-            auto command = jsonObject["command"].dump();
-            to->send(command);
+            if (Server::uuids.find(uuid) != Server::uuids.end()) {
+                Client *to = Server::uuids[uuid];
+
+                if (jsonObject.find("command") != jsonObject.end()) {
+                    auto command = jsonObject["command"];
+                    command["sender"] = from->uuid;
+
+                    to->send(command.dump());
+                }
+
+            }
+            else {
+                std::cout << "Couldn't find uuid: " << uuid << "." << std::endl;
+                from->send("{\"error\" = \"UUIDIsNotAvailable\"}\n");
+            }
+
         }
         else {
             // or redirect to everyone
@@ -69,7 +82,9 @@ void Handler::onChat(Client *from, std::string message) {
 
 void Handler::onUUID(Client *from, std::string message) {
     if (Server::uuids.count(message)) {
-        std::cout << "There is already someone with that uuid for: " << from->fd << "." << std::endl;
+        std::cout << "There is already someone with that uuid for: " << message;
+        std::cout << " in " << from->fd << "." << std::endl;
+
         from->send("There is already someone with that uuid.\n");
         Server::closeClient(from);
     }

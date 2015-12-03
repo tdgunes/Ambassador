@@ -75,7 +75,7 @@ void Server::start() {
 
 void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     Client *from = (Client *) arg;
-    uint8_t data[8192];
+    uint8_t data[8192]; //FIXME: protocol demands
     size_t n = 0;
 
 //    std::vector<char> message;
@@ -86,7 +86,7 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
             break;
         }
 //        message.push_back(data )
-        std::string message(data, data + n - 2);
+        std::string message(data, data + n);
         Server::handler->handleMessage(from, message);
     }
 
@@ -122,6 +122,10 @@ void Server::onAccept(struct evconnlistener *listener, evutil_socket_t client_fd
     Client *client = new Client(client_fd);
     client->status = Client::Status::UUID;
     client->bufferedEvent = bufferevent_socket_new(evbase, client_fd, BEV_OPT_CLOSE_ON_FREE);
+
+    if (client->bufferedEvent == NULL) {
+        std::cout << "Unable to create socket for " << client->fd << std::endl;
+    }
 
     if (!client->bufferedEvent) {
         fprintf(stderr, "Error constructing bufferevent!");
@@ -164,7 +168,7 @@ void Server::signalSigint(evutil_socket_t sig, short events, void *user_data) {
 
 void Server::closeClient(Client *client) {
 
-    if (client->status == Client::Status::CHAT || client->status == Client::Status::UUID) {
+    if (client->status == Client::Status::CHAT) {
         std::cout << "Remove " << client->uuid << " from " << client->fd << "." << std::endl;
     } else {
         std::cout << "Remove " << "Anonymous" << " from " << client->fd << "." << std::endl;

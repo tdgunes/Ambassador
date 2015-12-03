@@ -23,7 +23,7 @@ public:
     int fd;
     Status status;
     std::string uuid;
-    struct bufferevent *bufferedEvent;
+    struct bufferevent *bufferedEvent = nullptr;
 
     void send(std::string message);
 
