@@ -5,6 +5,7 @@
 #include "Handler.h"
 #include "json.hpp"
 #include "Server.h"
+#include <algorithm>
 
 using json = nlohmann::json;
 
@@ -17,12 +18,16 @@ void Handler::handleMessage(Client *from, std::string message) {
     if (from == nullptr)
         throw std::invalid_argument("Received a null client as parameter.");
 
+    message.erase(std::remove(message.begin(), message.end(), '\n'), message.end());
+    message.erase(std::remove(message.begin(), message.end(), '\r'), message.end());
+    std::cout << "[" << message << "]" << std::endl;
     switch (from->status) {
         case Client::Status::CHAT:
             this->onChat(from, message);
             break;
 
         case Client::Status::UUID:
+
             this->onUUID(from, message);
             break;
 
@@ -49,7 +54,7 @@ void Handler::onChat(Client *from, std::string message) {
                 if (jsonObject.find("command") != jsonObject.end()) {
                     auto command = jsonObject["command"];
                     command["sender"] = from->uuid;
-
+                    std::cout << "Sending [" << to->uuid << "] a message." << std::endl;
                     to->send(command.dump());
                 }
 
@@ -67,13 +72,13 @@ void Handler::onChat(Client *from, std::string message) {
     } catch (std::invalid_argument error) {
         std::cout << "Error while parsing: " << error.what() << std::endl;
 
-        for (auto pair: Server::clients) {
-            Client *client = pair.second;
-            if (client != from) { // do not send me same message back
-                std::string cargo = "[" + from->uuid + "]: " + message + "\n";
-                client->send(cargo);
-            }
-        }
+//        for (auto pair: Server::clients) {
+//            Client *client = pair.second;
+//            if (client != from) { // do not send me same message back
+//                std::string cargo = "[" + from->uuid + "]: " + message + "\n";
+//                client->send(cargo);
+//            }
+//        }
 
     }
 
