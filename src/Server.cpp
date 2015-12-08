@@ -102,8 +102,8 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     uint8_t buffer[package_size];
     psize = (char *) &buffer;
     while (bytes_to_read) {
-
         n = bufferevent_read(bev, psize, bytes_to_read);
+        if (n == 0) break;
         bytes_to_read -= n;
         psize += n;
     }
