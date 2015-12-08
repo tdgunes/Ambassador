@@ -5,6 +5,8 @@
 #include "Server.h"
 #include <vector>
 
+#define MAX_PACKAGE_SIZE 65536
+
 std::map<int, Client *> Server::clients;
 std::map<std::string, Client *> Server::uuids;
 
@@ -91,8 +93,10 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     }
     package_size = ntohs(package_size);
     std::cout << "Package size: " << package_size << std::endl;
-    if (package_size > 100000) return;
-    if (package_size == 0) return; // disregard
+
+    // disregard these
+    if (package_size > MAX_PACKAGE_SIZE) return;
+    if (package_size == 0) return;
 
     uint8_t buffer[package_size];
     psize = (char *) &buffer;
