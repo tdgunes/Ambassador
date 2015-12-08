@@ -3,6 +3,7 @@
 //
 
 #include "Server.h"
+#include <vector>
 
 std::map<int, Client *> Server::clients;
 std::map<std::string, Client *> Server::uuids;
@@ -75,6 +76,7 @@ void Server::start() {
 
 void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     Client *from = (Client *) arg;
+    std::vector<std::string> buffer;
     uint8_t data[8192]; //FIXME: protocol demands
     size_t n = 0;
 
@@ -83,11 +85,16 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     while (true) {
         n = bufferevent_read(bev, data, sizeof(data));
         if (n <= 0) {
+            std::string message = "";
+            for (auto token : buffer) {
+                message += token;
+            }
+
+            Server::handler->handleMessage(from, message);
             break;
         }
-//        message.push_back(data )
         std::string message(data, data + n);
-        Server::handler->handleMessage(from, message);
+        buffer.push_back(message);
     }
 
 
