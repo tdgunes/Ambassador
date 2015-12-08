@@ -92,14 +92,15 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
         psize += n;
     }
     package_size = ntohs(package_size);
-    std::cout << "Package size: " << package_size << std::endl;
+    std::cout << "Received Package size: " << package_size << std::endl;
+    std::cout << "From: " << from->uuid << std::endl;
 
     // disregard these
-    if (package_size > MAX_PACKAGE_SIZE) return;
+    if (MAX_PACKAGE_SIZE < package_size) return;
     if (package_size == 0) return;
 
     bytes_to_read = (size_t) package_size;
-    uint8_t buffer[package_size];
+    uint8_t buffer[bytes_to_read];
     psize = (char *) &buffer;
     while (bytes_to_read) {
         n = bufferevent_read(bev, psize, bytes_to_read);
@@ -107,7 +108,7 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
         psize += n;
     }
 
-    std::string message(buffer, buffer + n);
+    std::string message(buffer, buffer + package_size);
 
     Server::handler->handleMessage(from, message);
 
