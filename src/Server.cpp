@@ -76,31 +76,29 @@ void Server::start() {
 
 void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     Client *from = (Client *) arg;
-    std::vector<std::string> buffer;
 
 
-//    std::vector<char> message;
-    /* Read 8kb at a time and send it to all connected clients. */
-    while (true) {
-        uint8_t data[8192]; //FIXME: protocol demands
-        size_t n = 0;
+    size_t bytes_to_read = 2;
+    size_t n = 0;
+    short package_size;
+    char *psize = (char *) &package_size;
 
-        n = bufferevent_read(bev, data, sizeof(data));
+    while (bytes_to_read) {
+        n = bufferevent_read(bev, psize, bytes_to_read);
 
-        std::string message(data, data + n);
-
-        if (message == "") {
-            std::string package = "";
-            for (auto token : buffer) {
-                package += token;
-            }
-
-            Server::handler->handleMessage(from, package);
-            break;
-        }
-
-        buffer.push_back(message);
+        bytes_to_read -= n;
+        psize += n;
     }
+    package_size = ntohs(package_size);
+    std::cout << "Package size: " << package_size << std::endl;
+    if (package_size > 100000) return;
+    if (package_size == 0) return; // disregard
+
+    uint8_t buffer[package_size];
+    n = bufferevent_read(bev, buffer, sizeof(buffer));
+    std::string message(buffer, buffer + n);
+
+    Server::handler->handleMessage(from, message);
 
 
 }
