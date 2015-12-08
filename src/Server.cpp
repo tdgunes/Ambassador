@@ -95,7 +95,14 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     if (package_size == 0) return; // disregard
 
     uint8_t buffer[package_size];
-    n = bufferevent_read(bev, buffer, sizeof(buffer));
+    psize = (char *) &buffer;
+    while (package_size) {
+
+        n = bufferevent_read(bev, psize, package_size);
+        package_size -= n;
+        psize += n;
+    }
+
     std::string message(buffer, buffer + n);
 
     Server::handler->handleMessage(from, message);
