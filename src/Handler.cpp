@@ -20,7 +20,7 @@ void Handler::handleMessage(Client *from, std::string message) {
 
     message.erase(std::remove(message.begin(), message.end(), '\n'), message.end());
     message.erase(std::remove(message.begin(), message.end(), '\r'), message.end());
-    std::cout << "[" << message << "]" << std::endl;
+    std::cout << "[>>>\n" << message << "\n<<<]" << std::endl;
     switch (from->status) {
         case Client::Status::CHAT:
             this->onChat(from, message);
