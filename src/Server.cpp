@@ -98,12 +98,13 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     if (package_size > MAX_PACKAGE_SIZE) return;
     if (package_size == 0) return;
 
+    bytes_to_read = (size_t) package_size;
     uint8_t buffer[package_size];
     psize = (char *) &buffer;
-    while (package_size) {
+    while (bytes_to_read) {
 
-        n = bufferevent_read(bev, psize, package_size);
-        package_size -= n;
+        n = bufferevent_read(bev, psize, bytes_to_read);
+        bytes_to_read -= n;
         psize += n;
     }
 
