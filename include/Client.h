@@ -20,16 +20,6 @@ public:
         INIT, UUID, CHAT
     };
 
-    int headerBytes = 0;
-    int bufferPointer = 0;
-    int bytesLeft = 0;
-    char buffer[65536];
-    int messageLength;
-    union len {
-        unsigned char length_c[2];
-        short length_s;
-    } length;
-
 
     int fd;
     Status status;

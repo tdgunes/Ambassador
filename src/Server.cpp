@@ -79,37 +79,27 @@ void Server::start() {
 void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     Client *from = (Client *) arg;
 
+    struct evbuffer *buffer = bufferevent_get_input(bev);
+    size_t buffer_len = evbuffer_get_length(buffer);
+    u_short record_len = 0;
 
-    if (from->headerBytes < 2) {
-        size_t count = bufferevent_read(bev, from->length.length_c + from->headerBytes,
-                                        (size_t) (2 - from->headerBytes));
 
-        from->headerBytes += count;
-        if (from->headerBytes >= 2) {
-            from->bytesLeft = ntohs(from->length.length_s);
-            from->messageLength = from->bytesLeft;
-        }
+    if (buffer_len < 2)
+        return;
 
-    }
-    else {
-        size_t count = bufferevent_read(bev, from->buffer + from->bufferPointer, (size_t) from->bytesLeft);
-        if (count <= 0)
-            return;
-        from->bytesLeft -= count;
-        from->bufferPointer += count;
+    evbuffer_copyout(buffer, &record_len, 2);
+    record_len = ntohs(record_len);
 
-        if (from->bytesLeft <= 0) {
-            from->bufferPointer = 0;
-            from->headerBytes = 0;
-            from->bytesLeft = 0;
-            from->buffer[MAX_PACKAGE_SIZE - 1] = '\0';
-            std::string message(from->buffer, from->buffer + from->messageLength);
-            Server::handler->handleMessage(from, message);
-            from->messageLength = 0;
-        }
+    if (buffer_len < record_len + 2)
+        return;
 
-    }
+    char message[record_len];
 
+    evbuffer_drain(buffer, 2);
+    evbuffer_remove(buffer, message, record_len);
+
+    std::string str_message(message, record_len);
+    Server::handler->handleMessage(from, str_message);
 
 }
 
