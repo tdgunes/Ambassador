@@ -102,17 +102,25 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     bytes_to_read = (size_t) package_size;
     uint8_t buffer[bytes_to_read];
     psize = (char *) &buffer;
+    u_short readSize = 0;
     while (bytes_to_read) {
         n = bufferevent_read(bev, psize, bytes_to_read);
+        if (n <= 0) break;
         std::cout << n << std::endl;
         bytes_to_read -= n;
         psize += n;
+        readSize += n;
     }
 
-    std::string message(buffer, buffer + package_size);
-
-    Server::handler->handleMessage(from, message);
-
+    if (package_size == readSize) {
+        std::cout << "Correcto!" << std::endl;
+        std::string message(buffer, buffer + package_size);
+        Server::handler->handleMessage(from, message);
+    }
+    else {
+        std::cout << "Wrong!" << std::endl;
+        std::cout << "Only read: " << readSize << std::endl;
+    }
 
 }
 
