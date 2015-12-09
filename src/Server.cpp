@@ -80,7 +80,36 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     Client *from = (Client *) arg;
 
 
-    size_t bytes_to_read = 2;
+    if (from->headerBytes < 2) {
+        size_t count = bufferevent_read(bev, from->length.length_c + from->headerBytes,
+                                        (size_t) (2 - from->headerBytes));
+
+        from->headerBytes += count;
+        if (from->headerBytes >= 2) {
+            from->bytesLeft = ntohs(from->length.length_s);
+            from->messageLength = from->bytesLeft;
+        }
+
+    }
+    else {
+        size_t count = bufferevent_read(bev, from->buffer + from->bufferPointer, (size_t) from->bytesLeft);
+        if (count <= 0)
+            return;
+        from->bytesLeft -= count;
+        from->bufferPointer += count;
+
+        if (from->bytesLeft <= 0) {
+            from->bufferPointer = 0;
+            from->headerBytes = 0;
+            from->bytesLeft = 0;
+            from->buffer[MAX_PACKAGE_SIZE - 1] = '\0';
+            std::string message(from->buffer, from->buffer + from->messageLength);
+            Server::handler->handleMessage(from, message);
+            from->messageLength = 0;
+        }
+
+    }
+
     size_t n = 0;
     short package_size;
     char *psize = (char *) &package_size;
