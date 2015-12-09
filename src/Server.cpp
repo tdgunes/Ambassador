@@ -104,6 +104,7 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     psize = (char *) &buffer;
     while (bytes_to_read) {
         n = bufferevent_read(bev, psize, bytes_to_read);
+        std::cout << n << std::endl;
         bytes_to_read -= n;
         psize += n;
     }
