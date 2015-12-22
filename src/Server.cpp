@@ -5,7 +5,6 @@
 #include "Server.h"
 #include <vector>
 
-#define MAX_PACKAGE_SIZE 65536
 
 std::map<int, Client *> Server::clients;
 std::map<std::string, Client *> Server::uuids;

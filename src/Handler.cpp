@@ -61,7 +61,7 @@ void Handler::onChat(Client *from, std::string message) {
             }
             else {
                 std::cout << "Couldn't find uuid: " << uuid << "." << std::endl;
-                from->send("{\"error\" = \"UUIDIsNotAvailable\"}\n");
+                from->send("{\"request\":\"error\", \"error\" : \"UUIDIsNotAvailable\", \"sender\":\"Ambassador\" }\n");
             }
 
         }
