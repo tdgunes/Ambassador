@@ -10,6 +10,7 @@
 #include <string.h>
 #include <event2/bufferevent.h>
 
+
 class Client {
 
 
@@ -19,6 +20,11 @@ public:
     enum class Status {
         INIT, UUID, CHAT
     };
+
+
+    struct evbuffer *buffer;
+    uint16_t size;
+
 
 
     int fd;

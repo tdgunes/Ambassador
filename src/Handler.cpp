@@ -14,7 +14,7 @@ Handler::Handler() {
 
 }
 
-void Handler::handleMessage(Client *from, std::string message) {
+void Handler::handleMessage(Client *from, std::string &message) {
     if (from == nullptr)
         throw std::invalid_argument("Received a null client as parameter.");
 
@@ -27,7 +27,6 @@ void Handler::handleMessage(Client *from, std::string message) {
             break;
 
         case Client::Status::UUID:
-
             this->onUUID(from, message);
             break;
 
@@ -37,7 +36,7 @@ void Handler::handleMessage(Client *from, std::string message) {
 }
 
 
-void Handler::onChat(Client *from, std::string message) {
+void Handler::onChat(Client *from, std::string &message) {
 
     std::cout << "[" << from->uuid << "]: " << message << std::endl;
 
@@ -72,20 +71,14 @@ void Handler::onChat(Client *from, std::string message) {
     } catch (std::invalid_argument error) {
         std::cout << "Error while parsing: " << error.what() << std::endl;
 
-//        for (auto pair: Server::clients) {
-//            Client *client = pair.second;
-//            if (client != from) { // do not send me same message back
-//                std::string cargo = "[" + from->uuid + "]: " + message + "\n";
-//                client->send(cargo);
-//            }
-//        }
+
 
     }
 
 
 }
 
-void Handler::onUUID(Client *from, std::string message) {
+void Handler::onUUID(Client *from, std::string &message) {
     if (Server::uuids.count(message)) {
         std::cout << "There is already someone with that uuid for: " << message;
         std::cout << " in " << from->fd << "." << std::endl;

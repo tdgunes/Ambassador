@@ -19,10 +19,11 @@ class Handler {
 public:
     Handler();
 
-    void handleMessage(Client *from, std::string message);
+    void handleMessage(Client *from, std::string &message);
 
-    void onUUID(Client *from, std::string message);
-    void onChat(Client *from, std::string message);
+    void onUUID(Client *from, std::string &message);
+
+    void onChat(Client *from, std::string &message);
 
     ~Handler();
 

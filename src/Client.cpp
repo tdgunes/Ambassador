@@ -3,11 +3,14 @@
 //
 
 #include <iostream>
+#include <event2/buffer.h>
 #include "Client.h"
 
 Client::Client(int fd) {
     this->fd = fd;
     this->status = Client::Status::INIT;
+    this->buffer = evbuffer_new();
+    this->size = 0;
 }
 
 void Client::send(std::string message) {
@@ -25,7 +28,7 @@ void Client::send(std::string message) {
 }
 
 Client::~Client() {
-
+    delete buffer;
 }
 
 

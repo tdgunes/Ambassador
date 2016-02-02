@@ -79,26 +79,31 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
     Client *from = (Client *) arg;
 
     struct evbuffer *buffer = bufferevent_get_input(bev);
-    size_t buffer_len = evbuffer_get_length(buffer);
-    u_short record_len = 0;
 
 
-    if (buffer_len < 2)
-        return;
+    evbuffer_remove_buffer(buffer, from->buffer,
+                           evbuffer_get_length(buffer)); // drain and copy to a particular client buffer
+    std::cout << "Size: " << evbuffer_get_length(from->buffer) << std::endl;
 
-    evbuffer_copyout(buffer, &record_len, 2);
-    record_len = ntohs(record_len);
+    while ((from->size == 0 && evbuffer_get_length(from->buffer) >= 2) ||
+           (from->size > 0 && evbuffer_get_length(from->buffer) >= from->size)
+            ) {
 
-    if (buffer_len < record_len + 2)
-        return;
+        if (from->size == 0 && evbuffer_get_length(from->buffer) >= 2) {
+            evbuffer_remove(from->buffer, &from->size, 2);
+            from->size = ntohs(from->size);
+        }
 
-    char message[record_len];
+        if (from->size > 0 && evbuffer_get_length(from->buffer) >= from->size) {
+            char message[from->size];
+            evbuffer_remove(from->buffer, &message, from->size);
+            std::string str_message(message, from->size);
+            Server::handler->handleMessage(from, str_message);
+            from->size = 0;
+        }
 
-    evbuffer_drain(buffer, 2);
-    evbuffer_remove(buffer, message, record_len);
+    }
 
-    std::string str_message(message, record_len);
-    Server::handler->handleMessage(from, str_message);
 
 }
 
