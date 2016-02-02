@@ -34,6 +34,8 @@ public:
 
     void send(std::string message);
 
+    void handle();
+
     ~Client();
 
 

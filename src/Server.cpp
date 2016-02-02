@@ -83,28 +83,8 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
 
     evbuffer_remove_buffer(buffer, from->buffer,
                            evbuffer_get_length(buffer)); // drain and copy to a particular client buffer
-    std::cout << "Size: " << evbuffer_get_length(from->buffer) << std::endl;
 
-    while ((from->size == 0 && evbuffer_get_length(from->buffer) >= 2) ||
-           (from->size > 0 && evbuffer_get_length(from->buffer) >= from->size)
-            ) {
-
-        if (from->size == 0 && evbuffer_get_length(from->buffer) >= 2) {
-            evbuffer_remove(from->buffer, &from->size, 2);
-            from->size = ntohs(from->size);
-        }
-
-        if (from->size > 0 && evbuffer_get_length(from->buffer) >= from->size) {
-            char message[from->size];
-            evbuffer_remove(from->buffer, &message, from->size);
-            std::string str_message(message, from->size);
-            Server::handler->handleMessage(from, str_message);
-            from->size = 0;
-        }
-
-    }
-
-
+    from->handle();
 }
 
 void Server::bufferedOnError(struct bufferevent *bev, short what, void *arg) {
