@@ -60,7 +60,11 @@ void Handler::onChat(Client *from, std::string &message) {
             }
             else {
                 std::cout << "Couldn't find uuid: " << uuid << "." << std::endl;
-                from->send("{\"request\":\"error\", \"error\" : \"UUIDIsNotAvailable\", \"sender\":\"Ambassador\" }\n");
+                std::string error = "{\"category\":\"error\", "
+                        "\"error\" : \"Device that is requested, is not connected to local Ambassador. Please make sure that your device is online and connected!\", "
+                        "\"type\" : \"DeviceNotConnected\", "
+                        "\"sender\":\"Ambassador\"}\n";
+                from->send(error);
             }
 
         }
