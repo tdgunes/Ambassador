@@ -86,9 +86,10 @@ void Handler::onUUID(Client *from, std::string &message) {
     if (Server::uuids.count(message)) {
         std::cout << "There is already someone with that uuid for: " << message;
         std::cout << " in " << from->fd << "." << std::endl;
+        std::cout << "Closing the other connection!" << std::endl;
 
-        from->send("There is already someone with that uuid.\n");
-        Server::closeClient(from);
+        Client *previous = Server::uuids[message];
+        Server::closeClient(previous);
     }
 
 
