@@ -23,7 +23,7 @@ public:
 
 
     struct evbuffer *buffer;
-    uint16_t size;
+    uint32_t size;
 
 
 

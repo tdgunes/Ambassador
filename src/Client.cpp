@@ -17,9 +17,10 @@ Client::Client(int fd) {
 void Client::send(std::string message) {
     message = message + std::string("\n");
     if (message.length() > 0) {
-        u_short s = htons(strlen(message.c_str()));
         std::cout << "Departure Package Size: " << strlen(message.c_str()) << std::endl;
-        bufferevent_write(this->bufferedEvent, &s, 2);
+        uint32_t s = htonl(strlen(message.c_str()));
+
+        bufferevent_write(this->bufferedEvent, &s, 4);
         bufferevent_write(this->bufferedEvent, message.c_str(), strlen(message.c_str()));
     }
     else {
@@ -33,19 +34,21 @@ Client::~Client() {
 
 
 void Client::handle() {
-    while ((size == 0 && evbuffer_get_length(buffer) >= 2) ||
+    while ((size == 0 && evbuffer_get_length(buffer) >= 4) ||
            (size > 0 && evbuffer_get_length(buffer) >= size)
             ) {
 
-        if (size == 0 && evbuffer_get_length(buffer) >= 2) {
-            evbuffer_remove(buffer, &size, 2);
-            size = ntohs(size);
+        if (size == 0 && evbuffer_get_length(buffer) >= 4) {
+            int drained = evbuffer_remove(buffer, &size, 4);
+            size = ntohl(size);
+            std::cout << size << std::endl;
+            std::cout << "Drained:" << drained << std::endl;
         }
 
         if (size > 0 && evbuffer_get_length(buffer) >= size) {
-            char message[size];
+            uint8_t message[size];
             evbuffer_remove(buffer, &message, size);
-            std::string str_message(message, size);
+            std::string str_message((char *) message, size);
             Server::handler->handleMessage(this, str_message);
             size = 0;
         }
