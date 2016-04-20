@@ -8,8 +8,8 @@
 
 std::map<int, Client *> Server::clients;
 std::map<std::string, Client *> Server::uuids;
-
 Handler *Server::handler = nullptr;
+EventSystem Server::eventSystem;
 
 Server::Server(unsigned int port) {
     std::cout << "Server is initialising..." << std::endl;
@@ -144,7 +144,8 @@ void Server::onAccept(struct evconnlistener *listener, evutil_socket_t client_fd
 }
 
 void Server::signalSigint(evutil_socket_t sig, short events, void *user_data) {
-
+    //TODO: Must return an alternative Ambassador address, if its going offline
+    //FIXME: Must return a valid JSON response
     struct event_base *evbase = (struct event_base *) user_data;
 
     std::cout << "Caught an interrupt signal, close all clients\n" << std::endl;
@@ -161,6 +162,7 @@ void Server::signalSigint(evutil_socket_t sig, short events, void *user_data) {
 }
 
 void Server::closeClient(Client *client) {
+    eventSystem.update(EventSystem::Event::LEAVING, client);
 
     if (client->status == Client::Status::CHAT) {
         std::cout << "Remove " << client->uuid << " from " << client->fd << "." << std::endl;
@@ -173,6 +175,11 @@ void Server::closeClient(Client *client) {
     close(client->fd);
     uuids.erase(client->uuid);
     clients.erase(client->fd);
+
+    if (eventSystem.isJoined(client)) {
+        eventSystem.leave(client);
+    }
+
     delete client;
 }
 

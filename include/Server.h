@@ -31,13 +31,16 @@
 
 #include "Client.h"
 #include "Handler.h"
+#include "EventSystem.h"
+
+class EventSystem;
 
 class Server {
 
 public:
     static std::map<int, Client *> clients;
     static std::map<std::string, Client *> uuids;
-
+    static EventSystem eventSystem;
     static Handler *handler;
     Server(unsigned int port);
 

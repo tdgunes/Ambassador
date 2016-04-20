@@ -38,39 +38,53 @@ void Handler::handleMessage(Client *from, std::string &message) {
 
 void Handler::onChat(Client *from, std::string &message) {
 
-//    std::cout << "[" << from->uuid << "]: " << message << std::endl;
 
 
     try {
         auto jsonObject = json::parse(message);
-        std::string uuid = jsonObject["uuid"];
+        // redirect message protocol, {"uuid": receiver, "command": package}
+        if (jsonObject.find("uuid") != jsonObject.end() && jsonObject.find("command") != jsonObject.end()) {
+            std::string uuid = jsonObject["uuid"];
 
+            if (uuid.length() > 0) {
+                if (Server::uuids.find(uuid) != Server::uuids.end()) {
+                    Client *to = Server::uuids[uuid];
 
-        if (uuid.length() > 0) {
-            if (Server::uuids.find(uuid) != Server::uuids.end()) {
-                Client *to = Server::uuids[uuid];
-
-                if (jsonObject.find("command") != jsonObject.end()) {
                     auto command = jsonObject["command"];
                     command["sender"] = from->uuid;
                     std::cout << "Sending [" << to->uuid << "] a message." << std::endl;
                     to->send(command.dump());
+
+                }
+                else {
+                    std::cout << "Couldn't find uuid: " << uuid << "." << std::endl;
+                    std::string error = "{\"category\":\"error\", "
+                            "\"error\" : \"Device that is requested, is not connected to local Ambassador. Please make sure that your device is online and connected!\", "
+                            "\"type\" : \"DeviceNotConnected\", "
+                            "\"sender\":\"Ambassador\"}\n";
+                    from->send(error);
                 }
 
             }
             else {
-                std::cout << "Couldn't find uuid: " << uuid << "." << std::endl;
-                std::string error = "{\"category\":\"error\", "
-                        "\"error\" : \"Device that is requested, is not connected to local Ambassador. Please make sure that your device is online and connected!\", "
-                        "\"type\" : \"DeviceNotConnected\", "
-                        "\"sender\":\"Ambassador\"}\n";
-                from->send(error);
+                //FIXME: or maybe redirect to everyone (dangerous!)
+
+            }
+        }
+            // event system protocol, {"listen": true, "follow":[uuid1, uuid2, uuid3, ... ] }
+        else if (jsonObject.find("listen") != jsonObject.end() &&
+                 jsonObject.find("follow") != jsonObject.end() &&
+                 jsonObject["follow"].is_array()) {
+
+            from->unfollowAll(); //FIXME: only changes in follow list can be added here, instead of resetting
+            for (auto &uuid: jsonObject["follow"]) {
+                from->follow(uuid);
             }
 
+            Server::eventSystem.join(from);
         }
         else {
-            // or redirect to everyone
-
+            std::cout << "\"uuid\" or \"command\" not found inside the message package" << std::endl;
         }
     } catch (std::invalid_argument error) {
         std::cout << "Error while parsing: " << error.what() << std::endl;
@@ -96,6 +110,7 @@ void Handler::onUUID(Client *from, std::string &message) {
     Server::uuids[message] = from;
     from->uuid = message;
     std::cout << "Client from " << from->fd << ", now is " << from->uuid << "." << std::endl;
+    Server::eventSystem.update(EventSystem::Event::CONNECTED, from);
     from->status = Client::Status::CHAT;
 }
 

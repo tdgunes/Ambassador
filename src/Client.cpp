@@ -56,3 +56,15 @@ void Client::handle() {
     }
 
 }
+
+void Client::follow(std::string uuid) {
+    following.insert(uuid);
+}
+
+void Client::unfollowAll() {
+    following.clear();
+}
+
+
+
+

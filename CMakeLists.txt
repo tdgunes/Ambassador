@@ -19,7 +19,7 @@ set(SOURCE_FILES
         include/Server.h
         libs/json.hpp
         src/Handler.cpp
-        include/Handler.h)
+        include/Handler.h src/EventSystem.cpp include/EventSystem.h)
 
 add_executable(ambassador ${SOURCE_FILES})
 target_link_libraries(ambassador ${LIBEVENT2_LIBRARIES})
