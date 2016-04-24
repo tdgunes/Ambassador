@@ -9,13 +9,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <event2/bufferevent.h>
+#include <unordered_set>
 
 
 class Client {
 
+private:
+    std::unordered_set<std::string> following;
 
 public:
     Client(int fd);
+
+    ~Client();
 
     enum class Status {
         INIT, UUID, CHAT
@@ -25,18 +30,18 @@ public:
     struct evbuffer *buffer;
     uint32_t size;
 
-
-
     int fd;
     Status status;
     std::string uuid;
     struct bufferevent *bufferedEvent = nullptr;
 
     void send(std::string message);
-
     void handle();
+    void unfollowAll();
+    void follow(std::string uuid);
 
-    ~Client();
+    std::unordered_set<std::string> &getFollowing();
+
 
 
 };
