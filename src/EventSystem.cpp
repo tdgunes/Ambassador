@@ -4,6 +4,7 @@
 
 #include <Client.h>
 #include <json.hpp>
+#include <Server.h>
 #include "EventSystem.h"
 
 void EventSystem::join(Client *client) {
@@ -17,7 +18,11 @@ void EventSystem::join(Client *client) {
         if (followedMap.count(uuid) == 0) {
             std::unordered_set<Client *> set;
             followedMap[uuid] = set;
+
         }
+
+        Event event = Server::uuids.count(uuid) > 0 ? Event::CONNECTED : Event::OFFLINE;
+        client->send(this->prepareEventMessage(event, uuid));
 
         followedMap[uuid].insert(client);
     }
@@ -39,7 +44,7 @@ void EventSystem::leave(Client *client) {
 void EventSystem::update(Event event, Client *client) {
     for (Client *follower: followedMap[client->uuid]) {
         // follower wants to know what happened to the client
-        follower->send(this->prepareEventMessage(event, client));
+        follower->send(this->prepareEventMessage(event, client->uuid));
     }
 }
 
@@ -47,21 +52,22 @@ bool EventSystem::isJoined(Client *client) {
     return followedMap.count(client->uuid) > 0;
 }
 
-std::string EventSystem::prepareEventMessage(Event event, Client *client) {
+std::string EventSystem::prepareEventMessage(Event event, std::string uuid) {
     nlohmann::json package;
 
     switch (event) {
         case Event::CONNECTED:
-            package["event"] = "connected";
+            package["event"] = 1;
             break;
         case Event::LEAVING:
-            package["event"] = "leaving";
+            package["event"] = 0;
             break;
         case Event::OFFLINE:
-            package["event"] = "offline";
+            package["event"] = 2;
             break;
     }
-    package["client"] = client->uuid;
+    package["category"] = "event";
+    package["client"] = uuid;
     return package.dump();
 }
 

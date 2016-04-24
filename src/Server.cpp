@@ -185,6 +185,8 @@ void Server::closeClient(Client *client) {
     }
 
     delete client;
+
+    eventSystem.update(EventSystem::Event::OFFLINE, client);
 }
 
 Server::~Server() {

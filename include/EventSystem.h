@@ -37,7 +37,7 @@ private:
     // key: follower, value set of clients that are followed
     std::unordered_map<Client *, std::unordered_set<std::string>> followerMap;
 
-    std::string prepareEventMessage(EventSystem::Event event, Client *client);
+    std::string prepareEventMessage(Event event, std::string uuid);
 
 
 
