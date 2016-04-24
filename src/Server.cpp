@@ -90,6 +90,10 @@ void Server::bufferedOnRead(struct bufferevent *bev, void *arg) {
 void Server::bufferedOnError(struct bufferevent *bev, short what, void *arg) {
     Client *client = (Client *) arg;
 
+    if (eventSystem.isJoined(client)) {
+        eventSystem.leave(client);
+    }
+
     if (what & BEV_EVENT_EOF) {
         /* Client disconnected, remove the read event and the
          * free the client structure. */

@@ -36,12 +36,11 @@ public:
     struct bufferevent *bufferedEvent = nullptr;
 
     void send(std::string message);
-
     void handle();
-
     void unfollowAll();
-
     void follow(std::string uuid);
+
+    std::unordered_set<std::string> &getFollowing();
 
 
 

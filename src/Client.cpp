@@ -65,6 +65,12 @@ void Client::unfollowAll() {
     following.clear();
 }
 
+std::unordered_set<std::string> &Client::getFollowing() {
+    return following;
+}
+
+
+
 
 
 
