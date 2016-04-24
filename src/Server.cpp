@@ -180,13 +180,14 @@ void Server::closeClient(Client *client) {
     uuids.erase(client->uuid);
     clients.erase(client->fd);
 
+
+
+    eventSystem.update(EventSystem::Event::OFFLINE, client);
+    
     if (eventSystem.isJoined(client)) {
         eventSystem.leave(client);
     }
-
     delete client;
-
-    eventSystem.update(EventSystem::Event::OFFLINE, client);
 }
 
 Server::~Server() {
