@@ -10,12 +10,15 @@
 #include <string.h>
 #include <event2/bufferevent.h>
 #include <unordered_set>
+#include <stdint.h>
+#include <Beacon.h>
 
 
 class Client {
 
 private:
     std::unordered_set<std::string> following;
+    std::unordered_set<Beacon> beacons;
 
 public:
     Client(int fd);
@@ -41,6 +44,13 @@ public:
     void follow(std::string uuid);
 
     std::unordered_set<std::string> &getFollowing();
+
+    void addBeacon(Beacon beacon);
+
+    void clearBeacons();
+
+    std::unordered_set<Beacon> &getBeacons();
+
 
 
 

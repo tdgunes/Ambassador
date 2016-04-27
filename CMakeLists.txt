@@ -19,7 +19,10 @@ set(SOURCE_FILES
         include/Server.h
         libs/json.hpp
         src/Handler.cpp
-        include/Handler.h src/EventSystem.cpp include/EventSystem.h)
+        include/Handler.h
+        src/EventSystem.cpp
+        include/EventSystem.h
+        include/Constants.h src/ProximitySystem.cpp include/ProximitySystem.h src/Beacon.cpp include/Beacon.h)
 
 add_executable(ambassador ${SOURCE_FILES})
 target_link_libraries(ambassador ${LIBEVENT2_LIBRARIES})

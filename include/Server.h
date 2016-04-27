@@ -32,6 +32,7 @@
 #include "Client.h"
 #include "Handler.h"
 #include "EventSystem.h"
+#include "ProximitySystem.h"
 
 class EventSystem;
 
@@ -41,6 +42,7 @@ public:
     static std::map<int, Client *> clients;
     static std::map<std::string, Client *> uuids;
     static EventSystem eventSystem;
+    static ProximitySystem proximitySystem;
     static Handler *handler;
     Server(unsigned int port);
 

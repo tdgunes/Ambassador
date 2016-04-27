@@ -3,9 +3,11 @@
 //
 
 #include "Handler.h"
-#include "json.hpp"
 #include "Server.h"
-#include <algorithm>
+#include "Beacon.h"
+#include "Constants.h"
+
+#include "json.hpp"
 
 using json = nlohmann::json;
 
@@ -83,6 +85,39 @@ void Handler::onChat(Client *from, std::string &message) {
 
             Server::eventSystem.join(from);
         }
+            // fetching this ambassador's proximity UUID:  {"proximity":true}
+        else if (jsonObject.find("proximity") != jsonObject.end() && jsonObject.find("own") == jsonObject.end()) {
+            nlohmann::json package;
+            package["category"] = "proximity";
+            package["proximity_uuid"] = PROXIMITY_UUID;
+            from->send(package.dump());
+        }
+            // client register owned beacons to this ambassador {"proximity":true, "own":[{"major":1, "minor":2}, ...] }
+        else if (jsonObject.find("proximity") != jsonObject.end() && jsonObject.find("own") != jsonObject.end()) {
+            from->clearBeacons();
+            for (json beaconObject: jsonObject["own"]) {
+                Beacon beacon;
+                beacon.major = beaconObject["major"];
+                beacon.minor = beaconObject["minor"];
+
+                from->addBeacon(beacon);
+            }
+
+        }
+            // client reports an event about a beacon {"proximity:"true", "beacon": {"major":1, "minor":2}, "event":0}
+        else if (jsonObject.find("proximity") != jsonObject.end() && jsonObject.find("beacon") != jsonObject.end()) {
+
+            uint8_t event = jsonObject["event"];
+            ProximitySystem::Event proximityEvent = static_cast<ProximitySystem::Event>(event);
+
+            json beaconObject = jsonObject["beacon"];
+            Beacon beacon;
+            beacon.major = beaconObject["major"];
+            beacon.minor = beaconObject["minor"];
+
+            Server::proximitySystem.update(proximityEvent, beacon, from);
+        }
+
         else {
             std::cout << "\"uuid\" or \"command\" not found inside the message package" << std::endl;
         }

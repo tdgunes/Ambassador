@@ -10,6 +10,7 @@ std::map<int, Client *> Server::clients;
 std::map<std::string, Client *> Server::uuids;
 Handler *Server::handler = nullptr;
 EventSystem Server::eventSystem;
+ProximitySystem Server::proximitySystem;
 
 Server::Server(unsigned int port) {
     std::cout << "Server is initialising..." << std::endl;

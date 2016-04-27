@@ -57,6 +57,8 @@ void Client::handle() {
 
 }
 
+// Event System
+
 void Client::follow(std::string uuid) {
     following.insert(uuid);
 }
@@ -68,6 +70,32 @@ void Client::unfollowAll() {
 std::unordered_set<std::string> &Client::getFollowing() {
     return following;
 }
+
+// Proximity System
+
+
+
+std::unordered_set<Beacon> &Client::getBeacons() {
+    return beacons;
+}
+
+void Client::addBeacon(Beacon beacon) {
+    this->beacons.insert(beacon);
+}
+
+void Client::clearBeacons() {
+    this->beacons.clear();
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

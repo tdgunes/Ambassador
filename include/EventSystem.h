@@ -22,7 +22,6 @@ public:
 
     // for listening or leaving event system
     void join(Client *client);
-
     void leave(Client *client);
 
     bool isJoined(Client *client);
