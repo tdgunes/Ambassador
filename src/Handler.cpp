@@ -86,10 +86,14 @@ void Handler::onChat(Client *from, std::string &message) {
             Server::eventSystem.join(from);
         }
             // fetching this ambassador's proximity UUID:  {"proximity":true}
-        else if (jsonObject.find("proximity") != jsonObject.end() && jsonObject.find("own") == jsonObject.end()) {
+        else if (jsonObject.find("proximity") != jsonObject.end()
+                 && jsonObject.find("own") == jsonObject.end()
+                 && jsonObject.find("beacon") == jsonObject.end()) {
+            std::cout << "[Handler]" << "returning proximity uuid to: " << from->uuid << std::endl;
             nlohmann::json package;
             package["category"] = "proximity";
             package["proximity_uuid"] = PROXIMITY_UUID;
+
             from->send(package.dump());
         }
             // client register owned beacons to this ambassador {"proximity":true, "own":[{"major":1, "minor":2}, ...] }
@@ -99,12 +103,12 @@ void Handler::onChat(Client *from, std::string &message) {
                 Beacon beacon;
                 beacon.major = beaconObject["major"];
                 beacon.minor = beaconObject["minor"];
-
                 from->addBeacon(beacon);
             }
 
+            Server::proximitySystem.join(from);
         }
-            // client reports an event about a beacon {"proximity:"true", "beacon": {"major":1, "minor":2}, "event":0}
+            // client reports an event about a beacon {"proximity: true, "beacon": {"major":1, "minor":2}, "event":0}
         else if (jsonObject.find("proximity") != jsonObject.end() && jsonObject.find("beacon") != jsonObject.end()) {
 
             uint8_t event = jsonObject["event"];

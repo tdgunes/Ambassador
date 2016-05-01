@@ -32,8 +32,9 @@ public:
 
     void update(ProximitySystem::Event event, Beacon beacon, Client *client);
 
-    std::string prepareEventMessage(Event event, std::string uuid);
+    std::string prepareEventMessage(Event event, Beacon *beacon, std::string uuid);
 
+    bool isJoined(Client *client);
 };
 
 

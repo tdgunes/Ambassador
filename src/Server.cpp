@@ -95,6 +95,10 @@ void Server::bufferedOnError(struct bufferevent *bev, short what, void *arg) {
         eventSystem.leave(client);
     }
 
+    if (proximitySystem.isJoined(client)) {
+        proximitySystem.leave(client);
+    }
+
     if (what & BEV_EVENT_EOF) {
         /* Client disconnected, remove the read event and the
          * free the client structure. */
@@ -103,6 +107,7 @@ void Server::bufferedOnError(struct bufferevent *bev, short what, void *arg) {
     else {
         warn("Client socket error, disconnecting.\n");
     }
+
 
     closeClient(client);
 }
