@@ -95,6 +95,10 @@ void Handler::onChat(Client *from, std::string &message) {
             package["proximity_uuid"] = PROXIMITY_UUID;
 
             from->send(package.dump());
+
+            // sending available beacons for tracking
+
+            Server::proximitySystem.propagate(from);
         }
             // client register owned beacons to this ambassador {"proximity":true, "own":[{"major":1, "minor":2}, ...] }
         else if (jsonObject.find("proximity") != jsonObject.end() && jsonObject.find("own") != jsonObject.end()) {

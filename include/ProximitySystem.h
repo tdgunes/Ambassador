@@ -34,7 +34,14 @@ public:
 
     std::string prepareEventMessage(Event event, Beacon *beacon, std::string uuid);
 
+    std::string prepareBeaconRegistrationMessage(const Beacon *beacon);
+
+    std::string prepareBeaconLeaveMessage(const Beacon *beacon);
+
     bool isJoined(Client *client);
+
+
+    void propagate(Client *client);
 };
 
 
